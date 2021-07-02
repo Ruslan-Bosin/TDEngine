@@ -15,7 +15,7 @@ namespace TDEngine {
 
         static void Main(string[] args) {
 
-            window = new RenderWindow(new VideoMode(800, 600), "Test");
+            window = new RenderWindow(new VideoMode(1080, 920), "Window Name");
 
             window.Closed += (obj, e) => { window.Close(); };
             window.Resized += (obj, e) => { window.SetView(new View(new FloatRect(0, 0, e.Width, e.Height))); };
