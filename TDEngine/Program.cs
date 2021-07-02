@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.Window;
 
+// Работает ?
+
 namespace TDEngine {
 
     class Program {
