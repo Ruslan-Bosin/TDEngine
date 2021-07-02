@@ -26,8 +26,6 @@ namespace TDEngine {
                 window.Display();
             }
 
-            int number = 0;
-            Console.WriteLine("Random int is - " + number.randomInt(min: 0, max: 10).ToString());
         }
 
     }
