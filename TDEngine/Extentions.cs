@@ -15,5 +15,7 @@ namespace TDEngine {
             return result;
         }
 
+        // String Extentions:
+
     }
 }
