@@ -7,15 +7,22 @@ using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.Window;
 
+// Other
+using System.Drawing;
+
 namespace TDEngine {
 
     class Program {
 
         static RenderWindow window;
+        static Size resolution = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Size;
 
         static void Main(string[] args) {
 
-            window = new RenderWindow(new VideoMode(1200, 800), "Window Name");
+            uint width = (uint)resolution.Width;
+            uint height = (uint)resolution.Height;
+
+            window = new RenderWindow(new VideoMode(width, height), "Window Name");
 
             window.Closed += (obj, e) => { window.Close(); };
             window.Resized += (obj, e) => { window.SetView(new View(new FloatRect(0, 0, e.Width, e.Height))); };
