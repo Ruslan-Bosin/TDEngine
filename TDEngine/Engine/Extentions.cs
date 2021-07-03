@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace TDEngine {
 
     static class Extentions {
@@ -18,8 +17,6 @@ namespace TDEngine {
             int result = (int)Math.Round(calculate, 0);
             return result;
         }
-
-        // String Extentions:
 
     }
 }
