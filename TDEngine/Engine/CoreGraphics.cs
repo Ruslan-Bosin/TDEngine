@@ -49,6 +49,7 @@ namespace TDEngine {
         private CGSize _size;
         private CGPoint _position;
         private CGRect _rect;
+        private uint _frameLimit;
 
         private Styles __windowStyle;
 
@@ -101,6 +102,15 @@ namespace TDEngine {
                 }
             }
         }
+        public uint frameLimit {
+            get {
+                return _frameLimit;
+            }
+            set {
+                _frameLimit = value;
+                window.SetFramerateLimit(_frameLimit);
+            }
+        }
 
 
         public CGWindow() {
@@ -111,6 +121,8 @@ namespace TDEngine {
 
             _position = new CGPoint(window.Position.X, window.Position.Y);
             _rect = new CGRect(_position, _size);
+            _frameLimit = 60;
+            window.SetFramerateLimit(_frameLimit);
         }
 
         public CGWindow(CGWindowStyles windowSyle) {
@@ -142,9 +154,11 @@ namespace TDEngine {
 
             _position = new CGPoint(window.Position.X, window.Position.Y);
             _rect = new CGRect(_position, _size);
+            _frameLimit = 60;
+            window.SetFramerateLimit(_frameLimit);
         }
 
-
+        
         public void dispatchEvents() {
             window.DispatchEvents();
         }
