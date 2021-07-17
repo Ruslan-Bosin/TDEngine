@@ -124,6 +124,7 @@ namespace TDEngine {
             _rect = new CGRect(_position, _size, 0);
             _frameLimit = 60;
             window.SetFramerateLimit(_frameLimit);
+            window.Closed += (obj, e) => { window.Close(); };
         }
 
         public CGWindow(string title, CGSize size) {
@@ -136,6 +137,7 @@ namespace TDEngine {
             _rect = new CGRect(_position, _size, 0);
             _frameLimit = 60;
             window.SetFramerateLimit(_frameLimit);
+            window.Closed += (obj, e) => { window.Close(); };
         }
 
         public CGWindow(CGWindowStyles windowSyle) {
@@ -169,7 +171,7 @@ namespace TDEngine {
             _rect = new CGRect(_position, _size, 0);
             _frameLimit = 60;
             window.SetFramerateLimit(_frameLimit);
-
+            window.Closed += (obj, e) => { window.Close(); };
         }
 
         public void addSubview() {
@@ -177,7 +179,8 @@ namespace TDEngine {
             rect.FillColor = SFML.Graphics.Color.Cyan;
             window.Draw(rect);
         }
-        
+
+
         public void dispatchEvents() {
             window.DispatchEvents();
         }
