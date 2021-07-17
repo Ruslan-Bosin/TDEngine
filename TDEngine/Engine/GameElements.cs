@@ -28,10 +28,10 @@ namespace TDEngine {
 
     }
 
-    class GEGameScene {
+    interface GEGameScene {
 
-        public virtual void didLoad() { }
-        public virtual void update() { }
+        public void didLoad();
+        public void update();
 
     }
 

@@ -6,14 +6,15 @@ namespace TDEngine {
 
     class Scene2 : GEGameScene {
 
-        public override void didLoad() {
-            base.didLoad();
+        CGWindow window;
+        public Scene2(CGWindow window) { this.window = window; }
 
+        public void didLoad() {
+            // Did Load
         }
 
-        public override void update() {
-            base.update();
-
+        public void update() {
+            // Update
         }
 
     }

@@ -173,9 +173,9 @@ namespace TDEngine {
         }
 
         public void addSubview() {
-            CircleShape circle = new CircleShape(100, 20);
-            circle.FillColor = SFML.Graphics.Color.Red;
-            window.Draw(circle);
+            RectangleShape rect = new RectangleShape(new Vector2f(100, 100));
+            rect.FillColor = SFML.Graphics.Color.Cyan;
+            window.Draw(rect);
         }
         
         public void dispatchEvents() {
