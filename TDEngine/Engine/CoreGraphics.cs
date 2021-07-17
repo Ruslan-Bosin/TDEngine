@@ -10,6 +10,7 @@ using SFML.System;
 
 using System.Runtime.InteropServices;
 
+
 namespace TDEngine {
 
     public enum CGWindowStyles {
@@ -67,7 +68,7 @@ namespace TDEngine {
             } set {
                 _size = value;
                 window.Size = new Vector2u((uint)_size.width, (uint)_size.height);
-                _rect = new CGRect(_position, _size);
+                _rect = new CGRect(_position, _size, 0);
             }
         }
         public CGPoint position {
@@ -77,7 +78,7 @@ namespace TDEngine {
             set {
                 _position = value;
                 window.Position = new Vector2i((int)_position.x, (int)_position.y);
-                _rect = new CGRect(_position, _size);
+                _rect = new CGRect(_position, _size, 0);
             }
         }
         public CGRect rect {
@@ -120,7 +121,19 @@ namespace TDEngine {
             window = new RenderWindow(new VideoMode((uint)_size.width, (uint)_size.height), _title);
 
             _position = new CGPoint(window.Position.X, window.Position.Y);
-            _rect = new CGRect(_position, _size);
+            _rect = new CGRect(_position, _size, 0);
+            _frameLimit = 60;
+            window.SetFramerateLimit(_frameLimit);
+        }
+
+        public CGWindow(string title, CGSize size) {
+            _title = title;
+            _size = size;
+
+            window = new RenderWindow(new VideoMode((uint)_size.width, (uint)_size.height), _title);
+
+            _position = new CGPoint(window.Position.X, window.Position.Y);
+            _rect = new CGRect(_position, _size, 0);
             _frameLimit = 60;
             window.SetFramerateLimit(_frameLimit);
         }
@@ -153,11 +166,17 @@ namespace TDEngine {
             window = new RenderWindow(new VideoMode((uint)_size.width, (uint)_size.height), _title, __windowStyle);
 
             _position = new CGPoint(window.Position.X, window.Position.Y);
-            _rect = new CGRect(_position, _size);
+            _rect = new CGRect(_position, _size, 0);
             _frameLimit = 60;
             window.SetFramerateLimit(_frameLimit);
+
         }
 
+        public void addSubview() {
+            CircleShape circle = new CircleShape(100, 20);
+            circle.FillColor = SFML.Graphics.Color.Red;
+            window.Draw(circle);
+        }
         
         public void dispatchEvents() {
             window.DispatchEvents();
@@ -209,33 +228,38 @@ namespace TDEngine {
         public float y;
         public float width;
         public float height;
+        public float rotation;
 
-        public CGRect(float x, float y, float width, float height) {
+        public CGRect(float x, float y, float width, float height, float rotation) {
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
+            this.rotation = rotation;
         }
 
-        public CGRect(CGPoint point, float width, float height) {
+        public CGRect(CGPoint point, float width, float height, float rotation) {
             x = point.x;
             y = point.y;
             this.width = width;
             this.height = height;
+            this.rotation = rotation;
         }
 
-        public CGRect(float x, float y, CGSize size) {
+        public CGRect(float x, float y, CGSize size, float rotation) {
             this.x = x;
             this.y = y;
             width = size.width;
             height = size.height;
+            this.rotation = rotation;
         }
 
-        public CGRect(CGPoint point, CGSize size) {
+        public CGRect(CGPoint point, CGSize size, float rotation) {
             x = point.x;
             y = point.y;
             width = size.width;
             height = size.height;
+            this.rotation = rotation;
         }
     }
 
