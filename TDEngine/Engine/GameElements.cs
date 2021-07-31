@@ -15,7 +15,7 @@ namespace TDEngine {
         public bool isIntersectsWith(GERectCollider collider);
         public bool isIntersectsWith(GECircleCollider collider);
 
-        public void update(GETransform transform);
+        public void update();
 
     }
 
@@ -41,15 +41,33 @@ namespace TDEngine {
         public CGSize halfSize { get; set; }
         public CGPoint offset { get; set; }
 
-        public GERectCollider(CGPoint position, CGSize size) {
-            halfSize = new CGSize(width: size.width / 2, height: size.height / 2);
-            center = new CGPoint(x: position.x + halfSize.width, y: position.y + halfSize.height);
+        private GETransform transform;
+
+        public GERectCollider(GETransform transform) {
+            this.transform = transform;
+            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.height / 2);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             offset = new CGPoint(x: 0, y: 0);
         }
 
-        public GERectCollider(CGPoint position, CGSize size, CGPoint offset) {
+        public GERectCollider(GETransform transform, CGSize size) {
+            this.transform = transform;
             halfSize = new CGSize(width: size.width / 2, height: size.height / 2);
-            center = new CGPoint(x: position.x + halfSize.width, y: position.y + halfSize.height);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
+            offset = new CGPoint(x: 0, y: 0);
+        }
+
+        public GERectCollider(GETransform transform, CGPoint offset) {
+            this.transform = transform;
+            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.height / 2);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
+            this.offset = offset;
+        }
+
+        public GERectCollider(GETransform transform, CGSize size, CGPoint offset) {
+            this.transform = transform;
+            halfSize = new CGSize(width: size.width / 2, height: size.height / 2);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             this.offset = offset;
         }
 
@@ -95,7 +113,7 @@ namespace TDEngine {
             return false;
         }
 
-        public void update(GETransform transform) {
+        public void update() {
             center = transform.position + halfSize.toPoint() + offset;
         }
 
@@ -107,15 +125,33 @@ namespace TDEngine {
         public CGSize halfSize { get; set; }
         public CGPoint offset { get; set; }
 
-        public GECircleCollider(CGPoint position, float diameter) {
-            halfSize = new CGSize(width: diameter / 2, height: diameter / 2);
-            center = new CGPoint(x: position.x + halfSize.width, y: position.y + halfSize.height);
+        private GETransform transform;
+
+        public GECircleCollider(GETransform transform) {
+            this.transform = transform;
+            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.width / 2);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             offset = new CGPoint(x: 0, y: 0);
         }
 
-        public GECircleCollider(CGPoint position, float diameter, CGPoint offset) {
+        public GECircleCollider(GETransform transform, float diameter) {
+            this.transform = transform;
             halfSize = new CGSize(width: diameter / 2, height: diameter / 2);
-            center = new CGPoint(x: position.x + halfSize.width, y: position.y + halfSize.height);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
+            offset = new CGPoint(x: 0, y: 0);
+        }
+
+        public GECircleCollider(GETransform transform, CGPoint offset) {
+            this.transform = transform;
+            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.width / 2);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
+            this.offset = offset;
+        }
+
+        public GECircleCollider(GETransform transform, float diameter, CGPoint offset) {
+            this.transform = transform;
+            halfSize = new CGSize(width: diameter / 2, height: diameter / 2);
+            center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             this.offset = offset;
         }
 
@@ -153,7 +189,7 @@ namespace TDEngine {
             return false;
         }
 
-        public void update(GETransform transform) {
+        public void update() {
             center = transform.position + halfSize.toPoint() + offset;
         }
 
@@ -276,8 +312,8 @@ namespace TDEngine {
         public GEObject() {}
 
         public void update() {
-            ifNotNull(rectCollider, () => rectCollider.update(transform));
-            ifNotNull(circleCollider, () => circleCollider.update(transform));
+            ifNotNull(rectCollider, () => rectCollider.update());
+            ifNotNull(circleCollider, () => circleCollider.update());
             ifNotNull(body, () => body.update());
             ifNotNull(rendering, () => rendering.update());
         }
