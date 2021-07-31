@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>netcoreapp3.0</TargetFramework>
-		<StartupObject>TDEngine.Program</StartupObject>
+		<StartupObject>TDEngine.AppStarter</StartupObject>
 		<UseWindowsForms>true</UseWindowsForms>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>

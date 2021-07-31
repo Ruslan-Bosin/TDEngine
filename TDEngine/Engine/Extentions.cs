@@ -18,5 +18,9 @@ namespace TDEngine {
             return result;
         }
 
+        public static void print(this String line) {
+            System.Windows.Forms.MessageBox.Show(line);
+        }
+
     }
 }
