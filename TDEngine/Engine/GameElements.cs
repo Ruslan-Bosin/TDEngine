@@ -8,7 +8,7 @@ using SFML.System;
 using System.Linq;
 
 namespace TDEngine {
-    
+
     public interface GECollider {
 
         public CGPoint center { get; set; }
@@ -154,7 +154,7 @@ namespace TDEngine {
 
             transform.position += speed;
 
-        }
+    }
 
     }
 
@@ -181,7 +181,7 @@ namespace TDEngine {
 
         private void defaultsSettings() {
             backgroundColor = new CGColor("FFFFFF", 255);
-        }
+    }
 
         private void setTransform() {
             //rect.Size = new Vector2f(transform.scale.width, transform.scale.height);
