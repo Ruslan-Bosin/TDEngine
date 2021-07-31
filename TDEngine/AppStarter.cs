@@ -17,16 +17,17 @@ namespace TDEngine {
             var a = new GEObject();
             a.transform.scale = new CGSize(100, 100);
             a.rectCollider = new GERectCollider(a.transform);
+            a.circleCollider = new GECircleCollider(a.transform);
             a.body = new GEBody(a.transform, new CGVector(0, 0));
             a.rendering = new GERendering(a.transform, window); 
-
+            
             var b = new GEObject();
             b.transform.scale = new CGSize(50, 50);
             b.transform.position = new CGPoint(300, 300);
-            b.rectCollider = new GERectCollider(b.transform);
+            b.circleCollider = new GECircleCollider(b.transform);
             b.body = new GEBody(b.transform, new CGVector(0, 0));
             b.rendering = new GERendering(b.transform, window);
-            b.rendering.obj = 0;
+            b.rendering.shape = GERenderingShapes.Circle;
 
 
             while (window.isOpen) {
@@ -45,7 +46,7 @@ namespace TDEngine {
                     a.transform.position += new CGVector(3, 0);
                 }
 
-                if (b.rectCollider.isIntersectsWith(a.rectCollider)) {
+                if (a.rectCollider.isIntersectsWith(b.circleCollider)) {
                     a.rendering.backgroundColor = new CGColor("000000", 100);
                 } else {
                     a.rendering.backgroundColor = new CGColor("FFFFFF", 255);

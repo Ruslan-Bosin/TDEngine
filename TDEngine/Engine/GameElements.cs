@@ -248,22 +248,24 @@ namespace TDEngine {
 
     public class GERendering {
 
+        // Main fields
         protected GETransform transform;
         protected CGWindow window;
-        protected RectangleShape rect;
 
-        public int obj = 0;
-
+        // Shapes
+        public GERenderingShapes shape = GERenderingShapes.Rectangle;
+        protected RectangleShape rectangle;
         protected CircleShape circle;
 
+        // Optional fields
         public CGColor backgroundColor;
 
         public GERendering(GETransform transform, CGWindow window) {
             this.transform = transform;
             this.window = window;
 
+            rectangle = new RectangleShape(size: new Vector2f(transform.scale.width, transform.scale.height));
             circle = new CircleShape(radius: transform.scale.width / 2);
-            rect = new RectangleShape(size: new Vector2f(transform.scale.width, transform.scale.height));
 
             setTransform();
             defaultsSettings();
@@ -276,23 +278,37 @@ namespace TDEngine {
         }
 
         private void setTransform() {
-            if (obj == 1) {
-                circle.Position = new Vector2f(transform.position.x, transform.position.y);
-            } else {
-                rect.Size = new Vector2f(transform.scale.width, transform.scale.height);
-                rect.Position = new Vector2f(x: transform.position.x, y: transform.position.y);
+
+            switch (shape) {
+                case GERenderingShapes.Rectangle:
+                    rectangle.Size = new Vector2f(transform.scale.width, transform.scale.height);
+                    rectangle.Position = new Vector2f(x: transform.position.x, y: transform.position.y);
+                    break;
+                case GERenderingShapes.Circle:
+                    circle.Position = new Vector2f(transform.position.x, transform.position.y);
+                    break;
+                default:
+                    break;
             }
+
         }
 
         public void update() {
             setTransform();
-            rect.FillColor = backgroundColor.toSfmlColor();
 
-            if (obj == 1) {
-                window.draw(circle);
-            } else {
-                window.draw(rect);
+            switch (shape) {
+                case GERenderingShapes.Rectangle:
+                    rectangle.FillColor = backgroundColor.toSfmlColor();
+                    window.draw(rectangle);
+                    break;
+                case GERenderingShapes.Circle:
+                    circle.FillColor = backgroundColor.toSfmlColor();
+                    window.draw(circle);
+                    break;
+                default:
+                    break;
             }
+
         }
 
     }
@@ -324,6 +340,11 @@ namespace TDEngine {
             }
         }
 
+    }
+
+    public enum GERenderingShapes {
+        Rectangle,
+        Circle
     }
 
 }
