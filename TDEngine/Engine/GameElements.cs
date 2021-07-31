@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-using SFML.Window;
 using SFML.Graphics;
 using SFML.System;
-using System.Linq;
 
 namespace TDEngine {
 
@@ -64,8 +61,38 @@ namespace TDEngine {
 
         public bool isIntersectsWith(GECircleCollider collider) {
 
-            throw new Exception("EmptyFunction");
+            CGPoint topLeft = new CGPoint(x: center.x - halfSize.width, y: center.y - halfSize.height);
+            CGPoint topRight = new CGPoint(x: center.x + halfSize.width, y: center.y - halfSize.height);
+            CGPoint bottomLeft = new CGPoint(x: center.x - halfSize.width, y: center.y + halfSize.height);
+            CGPoint bottomRight = new CGPoint(x: center.x + halfSize.width, y: center.y + halfSize.height);
 
+            HashSet<CGPoint> points = new HashSet<CGPoint>();
+
+            for (int x = (int)topLeft.x; x <= (int)topRight.x; x++) {
+                points.Add(new CGPoint(x: x, y: topLeft.y));
+                points.Add(new CGPoint(x: x, y: bottomLeft.y));
+            }
+            
+            for (int y = (int)topLeft.y; y <= (int)bottomLeft.y; y++) {
+                points.Add(new CGPoint(x: topLeft.x, y: y));
+                points.Add(new CGPoint(x: topRight.x, y: y));
+            }
+
+            // Requires more resources
+            //for (int x = (int)topLeft.x; x <= (int)topRight.x; x++) {
+            //    for (int y = (int)topLeft.y; y <= (int)bottomLeft.y; y++) {
+            //        points.Add(new CGPoint(x, y));
+            //    }
+            //}
+
+            if (center.getDistanceTo(collider.center) <= halfSize.width) return true;
+            if (center.getDistanceTo(collider.center) <= halfSize.height) return true;
+
+            foreach (CGPoint point in points) {
+                if (point.getDistanceTo(collider.center) <= collider.halfSize.width) return true;
+            }
+
+            return false;
         }
 
         public void update(GETransform transform) {
@@ -93,7 +120,32 @@ namespace TDEngine {
         }
 
         public bool isIntersectsWith(GERectCollider collider) {
-            throw new Exception("EmptyFunction");
+
+            CGPoint topLeft = new CGPoint(x: collider.center.x - collider.halfSize.width, y: collider.center.y - collider.halfSize.height);
+            CGPoint topRight = new CGPoint(x: collider.center.x + collider.halfSize.width, y: collider.center.y - collider.halfSize.height);
+            CGPoint bottomLeft = new CGPoint(x: collider.center.x - collider.halfSize.width, y: collider.center.y + collider.halfSize.height);
+            CGPoint bottomRight = new CGPoint(x: collider.center.x + collider.halfSize.width, y: collider.center.y + collider.halfSize.height);
+
+            HashSet<CGPoint> points = new HashSet<CGPoint>();
+
+            for (int x = (int)topLeft.x; x <= (int)topRight.x; x++) {
+                points.Add(new CGPoint(x: x, y: topLeft.y));
+                points.Add(new CGPoint(x: x, y: bottomLeft.y));
+            }
+            for (int y = (int)topLeft.y; y <= (int)bottomLeft.y; y++) {
+                points.Add(new CGPoint(x: topLeft.x, y: y));
+                points.Add(new CGPoint(x: topRight.x, y: y));
+            }
+
+
+            if (collider.center.getDistanceTo(center) <= collider.halfSize.width) return true;
+            if (collider.center.getDistanceTo(center) <= collider.halfSize.height) return true;
+
+            foreach (CGPoint point in points) {
+                if (point.getDistanceTo(center) <= halfSize.width) return true;
+            }
+
+            return false;
         }
 
         public bool isIntersectsWith(GECircleCollider collider) {
@@ -162,17 +214,21 @@ namespace TDEngine {
 
         protected GETransform transform;
         protected CGWindow window;
-        //protected RectangleShape rect;
+        protected RectangleShape rect;
 
-        protected CircleShape rect;
+        public int obj = 0;
+
+        protected CircleShape circle;
 
         public CGColor backgroundColor;
 
         public GERendering(GETransform transform, CGWindow window) {
             this.transform = transform;
             this.window = window;
-            //rect = new RectangleShape(size: new Vector2f(transform.scale.width, transform.scale.height));
-            rect = new CircleShape(radius: transform.scale.width / 2);
+
+            circle = new CircleShape(radius: transform.scale.width / 2);
+            rect = new RectangleShape(size: new Vector2f(transform.scale.width, transform.scale.height));
+
             setTransform();
             defaultsSettings();
 
@@ -181,17 +237,26 @@ namespace TDEngine {
 
         private void defaultsSettings() {
             backgroundColor = new CGColor("FFFFFF", 255);
-    }
+        }
 
         private void setTransform() {
-            //rect.Size = new Vector2f(transform.scale.width, transform.scale.height);
-            rect.Position = new Vector2f(x: transform.position.x, y: transform.position.y);
+            if (obj == 1) {
+                circle.Position = new Vector2f(transform.position.x, transform.position.y);
+            } else {
+                rect.Size = new Vector2f(transform.scale.width, transform.scale.height);
+                rect.Position = new Vector2f(x: transform.position.x, y: transform.position.y);
+            }
         }
 
         public void update() {
             setTransform();
             rect.FillColor = backgroundColor.toSfmlColor();
-            window.draw(rect);
+
+            if (obj == 1) {
+                window.draw(circle);
+            } else {
+                window.draw(rect);
+            }
         }
 
     }

@@ -11,11 +11,6 @@ namespace TDEngine {
     class AppStarter {
 
         static CGWindow window = new CGWindow();
-        static GEScene[] scenes = {
-            new GEScene(title: "Scene1", gameScene: new Scene(window: window)),
-            new GEScene(title: "Scene2", gameScene: new Scene2(window: window))
-        };
-        static GEScene scene = scenes[0];
 
         static void Main(string[] args) {
 
@@ -33,6 +28,8 @@ namespace TDEngine {
             b.rectCollider = new GERectCollider(b.transform.position, b.transform.scale);
             b.body = new GEBody(b.transform, new CGVector(0, 0));
             b.rendering = new GERendering(b.transform, window);
+            b.rendering.obj = 1;
+
 
             while (window.isOpen) {
                 window.dispatchEvents();
@@ -42,21 +39,21 @@ namespace TDEngine {
 
                 if (Keyboard.IsKeyPressed(Keyboard.Key.W)) {
                     a.transform.position += new CGVector(0, -3);
-                } else if (Keyboard.IsKeyPressed(Keyboard.Key.A)) {
+                } if (Keyboard.IsKeyPressed(Keyboard.Key.A)) {
                     a.transform.position += new CGVector(-3, 0);
-                } else if (Keyboard.IsKeyPressed(Keyboard.Key.S)) {
+                } if (Keyboard.IsKeyPressed(Keyboard.Key.S)) {
                     a.transform.position += new CGVector(0, 3);
-                } else if (Keyboard.IsKeyPressed(Keyboard.Key.D)) {
+                } if (Keyboard.IsKeyPressed(Keyboard.Key.D)) {
                     a.transform.position += new CGVector(3, 0);
                 }
 
-                if (a.circleCollider.isIntersectsWith(b.circleCollider)) {
+                if (b.circleCollider.isIntersectsWith(a.rectCollider)) {
                     a.rendering.backgroundColor = new CGColor("000000", 100);
                 } else {
                     a.rendering.backgroundColor = new CGColor("FFFFFF", 255);
                 }
 
-                window.display(CGColors.Aqua);
+                window.display(CGColors.Indigo);
             }
 
         }
