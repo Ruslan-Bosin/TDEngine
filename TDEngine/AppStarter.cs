@@ -10,46 +10,46 @@ namespace TDEngine {
 
     class AppStarter {
 
-        static CGWindow window = new CGWindow();
+        static CGScreen screen = new CGScreen();
+        static CGWindow window = new CGWindow("Game", new CGSize(((int)screen.width).percentageRatio(80), ((int)screen.height).percentageRatio(80)));
 
         static void Main(string[] args) {
 
-            var a = new GEObject();
-            a.transform.scale = new CGSize(100, 100);
-            a.rectCollider = new GERectCollider(a.transform);
-            a.circleCollider = new GECircleCollider(a.transform);
-            a.body = new GEBody(a.transform, new CGVector(0, 0));
-            a.rendering = new GERendering(a.transform, window); 
-            
-            var b = new GEObject();
-            b.transform.scale = new CGSize(50, 50);
-            b.transform.position = new CGPoint(300, 300);
-            b.circleCollider = new GECircleCollider(b.transform);
-            b.body = new GEBody(b.transform, new CGVector(0, 0));
-            b.rendering = new GERendering(b.transform, window);
-            b.rendering.shape = GERenderingShapes.Circle;
+            CGPoint[] verst = new CGPoint[] { new CGPoint(0, 0), new CGPoint(100, 0), new CGPoint(50, 80) };
+            CGPoint[] verst2 = new CGPoint[] { new CGPoint(0, 100), new CGPoint(100, 100), new CGPoint(50, 0) };
+
+            GEObject mob = new GEObject();
+            mob.transform = new GETransform(new CGPoint(0, 0), new CGSize(100, 150), 0);
+            mob.rendering = new GERendering(mob.transform, window);
+            mob.polygonCollider = new GEPolygonCollider(verst);
+            mob.rendering.defineShape(verst);
+
+            GEObject mob2 = new GEObject();
+            mob2.transform = new GETransform(new CGPoint(0, 0), new CGSize(100, 150), 0);
+            mob2.rendering = new GERendering(mob2.transform, window);
+            mob2.polygonCollider = new GEPolygonCollider(verst2);
+            mob2.rendering.defineShape(verst2);
 
 
             while (window.isOpen) {
                 window.dispatchEvents();
 
-                a.update();
-                b.update();
+                mob.update();
+                mob2.update();
 
-                if (Keyboard.IsKeyPressed(Keyboard.Key.W)) {
-                    a.transform.position += new CGVector(0, -3);
-                } if (Keyboard.IsKeyPressed(Keyboard.Key.A)) {
-                    a.transform.position += new CGVector(-3, 0);
-                } if (Keyboard.IsKeyPressed(Keyboard.Key.S)) {
-                    a.transform.position += new CGVector(0, 3);
-                } if (Keyboard.IsKeyPressed(Keyboard.Key.D)) {
-                    a.transform.position += new CGVector(3, 0);
+                if (mob.polygonCollider.isIntersectsWith(mob2.polygonCollider)) {
+                    mob.rendering.backgroundColor = new CGColor(CGColors.Red);
                 }
 
-                if (a.rectCollider.isIntersectsWith(b.circleCollider)) {
-                    a.rendering.backgroundColor = new CGColor("000000", 100);
-                } else {
-                    a.rendering.backgroundColor = new CGColor("FFFFFF", 255);
+                if (Keyboard.IsKeyPressed(Keyboard.Key.D)) {
+                    mob.transform.position += new CGPoint(5, 0);
+                } else if (Keyboard.IsKeyPressed(Keyboard.Key.A)) {
+                    mob.transform.position -= new CGPoint(5, 0);
+                } 
+                if (Keyboard.IsKeyPressed(Keyboard.Key.W)) {
+                    mob.transform.position -= new CGPoint(0, 5);
+                } else if (Keyboard.IsKeyPressed(Keyboard.Key.S)) {
+                    mob.transform.position += new CGPoint(0, 5);
                 }
 
                 window.display(CGColors.Indigo);

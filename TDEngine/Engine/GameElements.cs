@@ -6,16 +6,16 @@ using SFML.System;
 
 namespace TDEngine {
 
+
     public interface GECollider {
 
-        public CGPoint center { get; set; }
-        public CGSize halfSize { get; set; }
-        public CGPoint offset { get; set; }
 
-        public bool isIntersectsWith(GERectCollider collider);
-        public bool isIntersectsWith(GECircleCollider collider);
+        //public CGPoint offset { get; set; }
 
-        public void update();
+        public CGPoint farthestPointInDirection(CGVector direction);
+        public bool isIntersectsWith(GEPolygonCollider collider);
+
+        //public void update();
 
     }
 
@@ -23,29 +23,148 @@ namespace TDEngine {
 
         public CGPoint position;
 
-        public CGSize scale;
+        public CGSize size;
 
         public float rotation;
 
         public GETransform(CGPoint position, CGSize scale, float rotation) {
             this.position = position;
-            this.scale = scale;
+            this.size = scale;
             this.rotation = rotation;
         }
 
     }
 
-    public class GERectCollider : GECollider {
+    public class GEPolygonCollider : GECollider {
+        private CGPoint[] points;
+
+        public GEPolygonCollider(CGPoint[] points) {
+            this.points = points;
+        }
+
+        private class GESimplex {
+            private List<CGPoint> points = new List<CGPoint>();
+
+            public GESimplex() {}
+
+            public void append(CGPoint point) {
+                points.Add(point);
+            }
+
+            public object calculateDirection() {
+                CGPoint a = points[points.Count - 1];
+
+                CGVector ao = a.cgVector().inverted();
+
+                if (points.Count == 3) {
+                    CGPoint b = points[1];
+                    CGPoint c = points[0];
+
+
+                    CGPoint ab = b - a;
+                    CGPoint ac = c - a;
+
+                    CGVector abPerp = new CGVector(ab.y, -ab.x);
+
+                    if (abPerp.getRelativeValueTo(c) >= 0) {
+                        abPerp = abPerp.inverted();
+                    }
+
+                    if (abPerp.getRelativeValueTo(ao.cgPoint()) > 0) {
+                        points.RemoveAt(0);
+                    }
+
+                    CGVector acPerp = new CGVector(ac.y, -ac.x);
+
+                    if (acPerp.getRelativeValueTo(b) >= 0) {
+                        acPerp = acPerp.inverted();
+                    }
+
+                    if (acPerp.getRelativeValueTo(ao.cgPoint()) > 0) {
+                        points.RemoveAt(1);
+                        return acPerp;
+                    }
+
+                    return null;
+                }
+
+                CGPoint _b = points[0];
+                CGPoint _ab = _b - a;
+                CGVector _abPerp = new CGVector(_ab.y, -_ab.x);
+
+                if (_abPerp.getRelativeValueTo(ao.cgPoint()) <= 0) {
+                    _abPerp = _abPerp.inverted();
+                }
+
+                return _abPerp;
+            }
+        
+        }
+
+        public CGPoint farthestPointInDirection(CGVector direction) {
+            float farthestDistance = 0;
+            CGPoint farthestPoint = new CGPoint(0, 0);
+
+            foreach (CGPoint point in points) {
+                float distanceInDirection = point.cgVector().getRelativeValueTo(direction.cgPoint());
+
+                if (distanceInDirection > farthestDistance) {
+                    farthestPoint = point;
+                    farthestDistance = distanceInDirection;
+                }
+            }
+
+            return farthestPoint;
+        }
+
+        public CGPoint support(GEPolygonCollider collider, CGVector direction) {
+            CGPoint aFar = farthestPointInDirection(direction);
+            CGPoint bFar = collider.farthestPointInDirection(direction);
+            return aFar - bFar;
+        }
+
+        public bool isIntersectsWith(GEPolygonCollider collider) {
+            GESimplex simplex = new GESimplex();
+
+            CGVector direction = new CGVector(0, 1);
+
+            CGPoint initSupportPoint = support(collider, direction);
+            simplex.append(initSupportPoint);
+
+            direction.invert();
+
+            while (true) {
+                CGPoint supportPoint = support(collider, direction);
+
+                if (supportPoint.cgVector().getRelativeValueTo(direction.cgPoint()) <= 0) {
+                    return false;
+                }
+
+                simplex.append(supportPoint);
+                direction = (CGVector)simplex.calculateDirection();
+            }
+
+            return true;
+        }
+
+        public void update() {
+
+        }
+    }
+
+    /*public class GERectCollider : GECollider {
 
         public CGPoint center { get; set; }
         public CGSize halfSize { get; set; }
         public CGPoint offset { get; set; }
 
+        public bool isPreciseMode;
+
         private GETransform transform;
 
         public GERectCollider(GETransform transform) {
             this.transform = transform;
-            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.height / 2);
+            halfSize = new CGSize(width: transform.size.width / 2, height: transform.size.height / 2);
             center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             offset = new CGPoint(x: 0, y: 0);
         }
@@ -59,7 +178,7 @@ namespace TDEngine {
 
         public GERectCollider(GETransform transform, CGPoint offset) {
             this.transform = transform;
-            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.height / 2);
+            halfSize = new CGSize(width: transform.size.width / 2, height: transform.size.height / 2);
             center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             this.offset = offset;
         }
@@ -97,14 +216,13 @@ namespace TDEngine {
             }
 
             // Requires more resources
-            //for (int x = (int)topLeft.x; x <= (int)topRight.x; x++) {
-            //    for (int y = (int)topLeft.y; y <= (int)bottomLeft.y; y++) {
-            //        points.Add(new CGPoint(x, y));
-            //    }
-            //}
-
-            if (center.getDistanceTo(collider.center) <= halfSize.width) return true;
-            if (center.getDistanceTo(collider.center) <= halfSize.height) return true;
+            if (isPreciseMode) {
+                for (int x = (int)topLeft.x; x <= (int)topRight.x; x++) {
+                    for (int y = (int)topLeft.y; y <= (int)bottomLeft.y; y++) {
+                        points.Add(new CGPoint(x, y));
+                    }
+                }
+            }
 
             foreach (CGPoint point in points) {
                 if (point.getDistanceTo(collider.center) <= collider.halfSize.width) return true;
@@ -118,18 +236,21 @@ namespace TDEngine {
         }
 
     }
+    */
 
-    public class GECircleCollider : GECollider {
+    /*public class GECircleCollider : GECollider {
 
         public CGPoint center { get; set; }
         public CGSize halfSize { get; set; }
         public CGPoint offset { get; set; }
 
+        public bool isPreciseMode;
+
         private GETransform transform;
 
         public GECircleCollider(GETransform transform) {
             this.transform = transform;
-            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.width / 2);
+            halfSize = new CGSize(width: transform.size.width / 2, height: transform.size.width / 2);
             center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             offset = new CGPoint(x: 0, y: 0);
         }
@@ -143,7 +264,7 @@ namespace TDEngine {
 
         public GECircleCollider(GETransform transform, CGPoint offset) {
             this.transform = transform;
-            halfSize = new CGSize(width: transform.scale.width / 2, height: transform.scale.width / 2);
+            halfSize = new CGSize(width: transform.size.width / 2, height: transform.size.width / 2);
             center = new CGPoint(x: transform.position.x + halfSize.width, y: transform.position.y + halfSize.height);
             this.offset = offset;
         }
@@ -173,9 +294,14 @@ namespace TDEngine {
                 points.Add(new CGPoint(x: topRight.x, y: y));
             }
 
-
-            if (collider.center.getDistanceTo(center) <= collider.halfSize.width) return true;
-            if (collider.center.getDistanceTo(center) <= collider.halfSize.height) return true;
+            // Requires more resources
+            if (isPreciseMode) {
+                for (int x = (int)topLeft.x; x <= (int)topRight.x; x++) {
+                    for (int y = (int)topLeft.y; y <= (int)bottomLeft.y; y++) {
+                        points.Add(new CGPoint(x, y));
+                    }
+                }
+            }
 
             foreach (CGPoint point in points) {
                 if (point.getDistanceTo(center) <= halfSize.width) return true;
@@ -194,6 +320,7 @@ namespace TDEngine {
         }
 
     }
+    */
 
     public class GEBody {
 
@@ -251,44 +378,99 @@ namespace TDEngine {
         // Main fields
         protected GETransform transform;
         protected CGWindow window;
+        public CGPoint offset = new CGPoint(0, 0);
+        public GEBody body;
 
         // Shapes
-        public GERenderingShapes shape = GERenderingShapes.Rectangle;
-        protected RectangleShape rectangle;
+        protected ConvexShape polygon;
         protected CircleShape circle;
 
         // Optional fields
         public CGColor backgroundColor;
+        public CGColor outlineColor;
+        public float outlineThickness;
+        public CGPoint origin;
 
         public GERendering(GETransform transform, CGWindow window) {
             this.transform = transform;
             this.window = window;
 
-            rectangle = new RectangleShape(size: new Vector2f(transform.scale.width, transform.scale.height));
-            circle = new CircleShape(radius: transform.scale.width / 2);
+            defineShape(GERenderingShape.Rectangle);
 
-            setTransform();
             defaultsSettings();
+            setTransform();
 
             update();
         }
 
+        public GERendering(GETransform transform, GERenderingShape initialShape, CGWindow window) {
+            this.transform = transform;
+            this.window = window;
+
+            defineShape(initialShape);
+
+            defaultsSettings();
+            setTransform();
+
+            update();
+        }
+
+        public GERendering(GETransform transform, GERenderingShape initialShape, CGPoint offset, CGWindow window) {
+            this.transform = transform;
+            this.offset = offset;
+            this.window = window;
+
+            defineShape(initialShape);
+
+            defaultsSettings();
+            setTransform();
+
+            update();
+        }
+
+        public void defineShape(CGPoint[] vertexes) {
+            circle = null;
+            polygon = new ConvexShape((uint)vertexes.Length);
+            for (uint i = 0; i < vertexes.Length; i++) {
+                polygon.SetPoint(i, new Vector2f(vertexes[i].x, vertexes[i].y));
+            }
+        }
+
+        public void defineShape(GERenderingShape shape) {
+            if (shape == GERenderingShape.Rectangle) {
+                circle = null;
+                polygon = new ConvexShape(4);
+                polygon.SetPoint(0, new Vector2f(0, 0));
+                polygon.SetPoint(1, new Vector2f(0 + transform.size.width, 0));
+                polygon.SetPoint(2, new Vector2f(0 + transform.size.width, 0 + transform.size.height));
+                polygon.SetPoint(3, new Vector2f(0, 0 + transform.size.height));
+            } else if (shape == GERenderingShape.Circle) {
+                polygon = null;
+                circle = new CircleShape(radius: transform.size.width / 2);
+            }
+            
+        }
+
         private void defaultsSettings() {
             backgroundColor = new CGColor("FFFFFF", 255);
+            outlineColor = new CGColor("000000", 255);
+            outlineThickness = 0;
+            if (circle != null) {
+                origin = new CGPoint(x: transform.size.width / 2, y: transform.size.width / 2);
+            }
+            if (polygon != null) {
+                origin = new CGPoint(x: transform.size.width / 2, y: transform.size.height / 2);
+            }
         }
 
         private void setTransform() {
 
-            switch (shape) {
-                case GERenderingShapes.Rectangle:
-                    rectangle.Size = new Vector2f(transform.scale.width, transform.scale.height);
-                    rectangle.Position = new Vector2f(x: transform.position.x, y: transform.position.y);
-                    break;
-                case GERenderingShapes.Circle:
-                    circle.Position = new Vector2f(transform.position.x, transform.position.y);
-                    break;
-                default:
-                    break;
+            if (circle != null) {
+                circle.Radius = transform.size.width / 2;
+                circle.Position = new Vector2f(transform.position.x + offset.x + origin.x, transform.position.y + offset.y + origin.y);  //  - origin.x
+            }
+            if (polygon != null) {
+                polygon.Position = new Vector2f(transform.position.x + offset.x + origin.x, transform.position.y + offset.y + origin.y);
             }
 
         }
@@ -296,17 +478,25 @@ namespace TDEngine {
         public void update() {
             setTransform();
 
-            switch (shape) {
-                case GERenderingShapes.Rectangle:
-                    rectangle.FillColor = backgroundColor.toSfmlColor();
-                    window.draw(rectangle);
-                    break;
-                case GERenderingShapes.Circle:
-                    circle.FillColor = backgroundColor.toSfmlColor();
-                    window.draw(circle);
-                    break;
-                default:
-                    break;
+            if (circle != null) {
+                circle.FillColor = backgroundColor.toSfmlColor();
+                circle.OutlineColor = outlineColor.toSfmlColor();
+                circle.OutlineThickness = outlineThickness;
+
+                circle.Origin = new Vector2f(origin.x, origin.y);
+                circle.Rotation = transform.rotation;
+
+                window.draw(circle);
+            }
+            if (polygon != null) {
+                polygon.FillColor = backgroundColor.toSfmlColor();
+                polygon.OutlineColor = outlineColor.toSfmlColor();
+                polygon.OutlineThickness = outlineThickness;
+
+                polygon.Origin = new Vector2f(origin.x, origin.y);
+                polygon.Rotation = transform.rotation;
+
+                window.draw(polygon);
             }
 
         }
@@ -320,16 +510,17 @@ namespace TDEngine {
             scale: new CGSize(width: 0, height: 0), 
             rotation: 0);
 
-        public GERectCollider rectCollider;
-        public GECircleCollider circleCollider;
+        //public GERectCollider rectCollider;
+        //public GECircleCollider circleCollider;
+        public GEPolygonCollider polygonCollider;
         public GEBody body;
         public GERendering rendering;
 
         public GEObject() {}
 
         public void update() {
-            ifNotNull(rectCollider, () => rectCollider.update());
-            ifNotNull(circleCollider, () => circleCollider.update());
+            //ifNotNull(rectCollider, () => rectCollider.update());
+            //ifNotNull(circleCollider, () => circleCollider.update());
             ifNotNull(body, () => body.update());
             ifNotNull(rendering, () => rendering.update());
         }
@@ -342,7 +533,7 @@ namespace TDEngine {
 
     }
 
-    public enum GERenderingShapes {
+    public enum GERenderingShape {
         Rectangle,
         Circle
     }

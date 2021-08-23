@@ -113,6 +113,19 @@ namespace TDEngine {
             }
         }
 
+        private void defaultsSettings() {
+
+            _position = new CGPoint(window.Position.X, window.Position.Y);
+            _rect = new CGRect(_position, _size, 0);
+            _frameLimit = 60;
+            window.SetFramerateLimit(_frameLimit);
+            window.Closed += (obj, e) => { window.Close(); };
+            window.Resized += (obj, e) => {
+                window.SetView(new View(new FloatRect(0, 0, e.Width, e.Height)));
+                size = new CGSize(e.Width, e.Height);
+            };
+
+        }
 
         public CGWindow() {
             _title = "Window";
@@ -120,12 +133,7 @@ namespace TDEngine {
             
             window = new RenderWindow(new VideoMode((uint)_size.width, (uint)_size.height), _title);
 
-            _position = new CGPoint(window.Position.X, window.Position.Y);
-            _rect = new CGRect(_position, _size, 0);
-            _frameLimit = 60;
-            window.SetFramerateLimit(_frameLimit);
-            window.Closed += (obj, e) => { window.Close(); };
-            window.Resized += (obj, e) => { window.SetView(new View(new FloatRect(0, 0, e.Width, e.Height))); };
+            defaultsSettings();
         }
 
         public CGWindow(string title, CGSize size) {
@@ -134,12 +142,7 @@ namespace TDEngine {
 
             window = new RenderWindow(new VideoMode((uint)_size.width, (uint)_size.height), _title);
 
-            _position = new CGPoint(window.Position.X, window.Position.Y);
-            _rect = new CGRect(_position, _size, 0);
-            _frameLimit = 60;
-            window.SetFramerateLimit(_frameLimit);
-            window.Closed += (obj, e) => { window.Close(); };
-            window.Resized += (obj, e) => { window.SetView(new View(new FloatRect(0, 0, e.Width, e.Height))); };
+            defaultsSettings();
         }
 
         public CGWindow(CGWindowStyles windowSyle) {
@@ -169,12 +172,7 @@ namespace TDEngine {
 
             window = new RenderWindow(new VideoMode((uint)_size.width, (uint)_size.height), _title, __windowStyle);
 
-            _position = new CGPoint(window.Position.X, window.Position.Y);
-            _rect = new CGRect(_position, _size, 0);
-            _frameLimit = 60;
-            window.SetFramerateLimit(_frameLimit);
-            window.Closed += (obj, e) => { window.Close(); };
-            window.Resized += (obj, e) => { window.SetView(new View(new FloatRect(0, 0, e.Width, e.Height))); };
+            defaultsSettings();
         }
 
         public void draw(Drawable obj) {
@@ -201,6 +199,12 @@ namespace TDEngine {
 
         public float x;
         public float y;
+        public float value {
+            get {
+                CGVector _vector = new CGVector(x, y);
+                return _vector.getDistanceTo(new CGPoint(0, 0));
+            }
+        }
 
         public CGVector(int x, int y) {
             this.x = x;
@@ -215,6 +219,24 @@ namespace TDEngine {
         public CGVector(CGPoint point) {
             x = point.x;
             y = point.y;
+        }
+
+        public void invert() {
+            x = -x;
+            y = -y;
+        }
+
+        public CGVector inverted() {
+            return new CGVector(-x, -y);
+        }
+
+        public float getDistanceTo(CGPoint point) {
+            double result = Math.Sqrt(Math.Pow((point.x - x), 2) + Math.Pow((point.y - y), 2));
+            return (float)result;
+        }
+
+        public float getRelativeValueTo(CGPoint point) {
+            return (x * point.x) + (y * point.y);
         }
 
         // +
@@ -410,42 +432,153 @@ namespace TDEngine {
 
     public class CGRect {
 
-        public float x;
-        public float y;
-        public float width;
-        public float height;
+        private float _x;
+        private float _y;
+        private float _width;
+        private float _height;
+        private CGPoint _point;
+        private CGSize _size;
+
+
+        public float x {
+            get {
+                return _x;
+            } set {
+                _x = value;
+                _point = new CGPoint(x: value, y: _y);
+            }
+        }
+        public float y {
+            get {
+                return _y;
+            } set {
+                _y = value;
+                _point = new CGPoint(x: _x, y: value);
+            }
+        }
+        public float width {
+            get {
+                return _width;
+            }
+            set {
+                _width = value;
+                _size = new CGSize(width: value, height: _height);
+            }
+        }
+        public float height {
+            get {
+                return _height;
+            }
+            set {
+                _height = value;
+                _size = new CGSize(width: _width, height: value);
+            }
+        }
         public float rotation;
 
+        public CGPoint point { get {
+                return _point;
+            } set {
+                _point = value;
+                _x = value.x;
+                _y = value.y;
+            }
+        }
+        public CGSize size { get {
+                return _size;
+            } set {
+                _size = value;
+                _width = value.width;
+                _height = value.height;
+            }
+        }
+
         public CGRect(float x, float y, float width, float height, float rotation) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
+            _x = x;
+            _y = y;
+            _width = width;
+            _height = height;
             this.rotation = rotation;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
         }
 
         public CGRect(CGPoint point, float width, float height, float rotation) {
-            x = point.x;
-            y = point.y;
-            this.width = width;
-            this.height = height;
+            _x = point.x;
+            _y = point.y;
+            _width = width;
+            _height = height;
             this.rotation = rotation;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
         }
 
         public CGRect(float x, float y, CGSize size, float rotation) {
-            this.x = x;
-            this.y = y;
-            width = size.width;
-            height = size.height;
+            _x = x;
+            _y = y;
+            _width = size.width;
+            _height = size.height;
             this.rotation = rotation;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
         }
 
         public CGRect(CGPoint point, CGSize size, float rotation) {
-            x = point.x;
-            y = point.y;
-            width = size.width;
-            height = size.height;
+            _x = point.x;
+            _y = point.y;
+            _width = size.width;
+            _height = size.height;
             this.rotation = rotation;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
+        }
+
+        public CGRect(float x, float y, float width, float height) {
+            _x = x;
+            _y = y;
+            _width = width;
+            _height = height;
+            rotation = 0;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
+        }
+
+        public CGRect(CGPoint point, float width, float height) {
+            _x = point.x;
+            _y = point.y;
+            _width = width;
+            _height = height;
+            rotation = 0;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
+        }
+
+        public CGRect(float x, float y, CGSize size) {
+            _x = x;
+            _y = y;
+            _width = size.width;
+            _height = size.height;
+            rotation = 0;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
+        }
+
+        public CGRect(CGPoint point, CGSize size) {
+            _x = point.x;
+            _y = point.y;
+            _width = size.width;
+            _height = size.height;
+            rotation = 0;
+
+            _point = new CGPoint(x: _x, y: _y);
+            _size = new CGSize(width: _width, height: _height);
         }
 
         public static CGRect operator +(CGRect value1, CGRect value2) {
@@ -498,6 +631,13 @@ namespace TDEngine {
             
         }
 
+        public CGColor(CGColors color) {
+            red = set(color).red;
+            green = set(color).green;
+            blue = set(color).blue;
+            alpha = set(color).alpha;
+        }
+
         public override string ToString() {
             string result = Convert.ToString(red, 16) + Convert.ToString(green, 16) + Convert.ToString(blue, 16);
             return result;
@@ -506,42 +646,121 @@ namespace TDEngine {
         public static CGColor set(CGColors color) {
             switch (color) {
                 case CGColors.Blue:
-                    return new CGColor("0000FF", 1);
+                    return new CGColor("0000FF", 255);
                 case CGColors.Aqua:
-                    return new CGColor("00FFFF", 1);
+                    return new CGColor("00FFFF", 255);
                 case CGColors.Green:
-                    return new CGColor("008000", 1);
+                    return new CGColor("008000", 255);
                 case CGColors.Yellow:
-                    return new CGColor("FFFF00", 1);
+                    return new CGColor("FFFF00", 255);
                 case CGColors.Red:
-                    return new CGColor("FF0000", 1);
+                    return new CGColor("FF0000", 255);
                 case CGColors.Purple:
-                    return new CGColor("800080", 1);
+                    return new CGColor("800080", 255);
                 case CGColors.White:
-                    return new CGColor("FFFFFF", 1);
+                    return new CGColor("FFFFFF", 255);
                 case CGColors.Gray:
-                    return new CGColor("808080", 1);
+                    return new CGColor("808080", 255);
                 case CGColors.Black:
-                    return new CGColor("000000", 1);
+                    return new CGColor("000000", 255);
                 case CGColors.Bisque:
-                    return new CGColor("FFE4C4", 1);
+                    return new CGColor("FFE4C4", 255);
                 case CGColors.Indigo:
-                    return new CGColor("4B0082", 1);
+                    return new CGColor("4B0082", 255);
                 case CGColors.Orange:
-                    return new CGColor("FFA500", 1);
+                    return new CGColor("FFA500", 255);
                 case CGColors.Pink:
-                    return new CGColor("FFC0CB", 1);
+                    return new CGColor("FFC0CB", 255);
                 case CGColors.Lime:
-                    return new CGColor("00FF00", 1);
+                    return new CGColor("00FF00", 255);
                 case CGColors.DarkGray:
-                    return new CGColor("A9A9A9", 1);
+                    return new CGColor("A9A9A9", 255);
                 default:
-                    return new CGColor("FFFFFF", 1);
+                    return new CGColor("FFFFFF", 255);
             }
         }
 
         public SFML.Graphics.Color toSfmlColor() {
             return new SFML.Graphics.Color(red, green, blue, alpha);
+        }
+
+    }
+
+    public class CGImage {
+
+        private SFML.Graphics.Image img;
+
+        private bool _isFlippedHorizontally = false;
+        private bool _isFlippedVertically = false;
+
+        public uint width {
+            get {
+                return img.Size.X;
+            }
+        }
+        public uint height {
+            get {
+                return img.Size.Y;
+            }
+        }
+
+        public readonly string path = "NONE";
+        public bool isFlippedHorizontally { get { return _isFlippedHorizontally; } }
+        public bool isFlippedVertically { get { return _isFlippedVertically; } }
+
+        public CGImage(string path) {
+            img = new SFML.Graphics.Image(path);
+            this.path = path;
+        }
+
+        public SFML.Graphics.Image toSfmlImage() {
+            return img;
+        }
+
+        public void flipHorizontally() {
+            img.FlipHorizontally();
+            _isFlippedHorizontally = !_isFlippedHorizontally;
+        }
+
+        public void flipVertically() {
+            img.FlipVertically();
+            _isFlippedVertically = !_isFlippedVertically;
+        }
+
+        public void save(string path) {
+            img.SaveToFile(path);
+        }
+
+        public void crop(CGRect area) {
+            Texture texture = new Texture(image: img, area: new IntRect(left: (int)area.x, top: (int)area.y, width: (int)area.width, height: (int)area.height));
+            img = texture.CopyToImage();
+        }
+
+        public void createMask(CGColor color) {
+            img.CreateMaskFromColor(color.toSfmlColor());
+        }
+
+        public override string ToString() {
+            return $"CGImage (path: {path})";
+        }
+
+    }
+
+    public class CGTeexture {
+
+        private Texture texture;
+
+        public CGTeexture(CGImage image) {
+            texture = new Texture(image.toSfmlImage());
+        }
+
+        public CGTeexture(string path) {
+            texture = new Texture(path);
+        }
+
+        public void crop(CGRect area) {
+            Texture temp = new Texture(image: texture.CopyToImage(), area: new IntRect(left: (int)area.x, top: (int)area.y, width: (int)area.width, height: (int)area.height));
+            texture = new Texture(temp);
         }
 
     }
