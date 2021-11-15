@@ -17,7 +17,7 @@ namespace TDEngine {
             int result = (int)Math.Round(calculate, 0);
             return result;
         }
-
+        // public static void
         public static void print(this String line) {
             System.Windows.Forms.MessageBox.Show(line);
         }
